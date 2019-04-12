@@ -1,6 +1,7 @@
 #ifndef __misc_h__
 #define __misc_h__
 
+#include <algorithm>
 #include <utility>
 #include <string>
 #include <list>
@@ -48,5 +49,40 @@ std::list<
 > split_to_list(
         std::string &&s,
         std::string::value_type sep);
+
+inline void
+ltrim(std::string &s)
+{
+    s.erase(
+        s.begin(),
+        std::find_if(
+            s.begin(), s.end(),
+            [](std::string::value_type c) { 
+                return !std::isspace(c); 
+            }
+        )
+    );
+}
+
+inline void
+rtrim(std::string &s)
+{
+    s.erase(
+        std::find_if(
+            s.rbegin(), s.rend(),
+            [](std::string::value_type c) { 
+                return !std::isspace(c); 
+            }
+        ).base(), 
+        s.end()
+    );
+}
+
+inline void
+trim(std::string &s)
+{
+    ltrim(s);
+    rtrim(s);
+}
 
 #endif // __misc_h__

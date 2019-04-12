@@ -28,8 +28,6 @@ using StateMachine = std::unordered_map<
     TransitionsWithWeights,
     StateHash
 >;
-// using StateMachineItr = StateMachine::iterator;
-// using StateMachineCItr = StateMachine::const_iterator;
 
 
 struct StateHash {
