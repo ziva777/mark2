@@ -1,18 +1,8 @@
-#include <unordered_map>
 #include <iostream>
-#include <iterator>
-#include <cstddef>
 #include <cstdlib>
-#include <ostream>
-#include <numeric>
-#include <sstream>
-#include <random>
 #include <string>
-#include <tuple>
-#include <list>
 
 #include "misc.h"
-
 #include "str_filter.h"
 #include "markov_model.h"
 #include "markov_model_tutor.h"
@@ -49,10 +39,70 @@ std::string data_src2 =
     "";
 
 
+#include <vector>
+#include <list>
+
+#include "pipe_read.h"
+
+
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////
 
 int
 main()
 {
+    std::list<std::string> files = {
+        {"file1"},
+        {"file2"},
+    };
+
+    for (int i = 0; i != 100; ++i) {
+        PipeRead pipe;
+        std::string cmd =
+            "curl -s file:///home/marina/programming/git/mark2/case_003.txt";
+        auto res = pipe.read(cmd);
+        // std::cout << "out = " << res.first << std::endl;
+        std::cout << "ok  = " << res.second << std::endl;
+    }
+
+    // std::vector<int> v;
+    // size_t n = 1024*1024*200; // 10 Mb
+    // v.resize(n);
+
+    // for (size_t i = 0; i != n; ++i) {
+    //     v[i] = i;
+    // }
+
+    // FILE *pipe = popen("echo \"123\" && sleep 30", "r");
+    // if (pipe) {
+    //     constexpr int buff_size = 64;
+    //     char buff[buff_size];
+    //     char *s;
+
+    //     while ((s = fgets(buff, buff_size, pipe)) != nullptr) {
+    //         std::cout << buff << std::endl;
+    //     }
+    //     // std::cout << "DONE\n";
+    //     pclose(pipe);
+    // } else {
+    //     std::cout << "ERROR\n";
+    // }
+
+    // std::string s;
+    // std::cin >> s;
+
+    // v.clear();
+    // v.shrink_to_fit();
+
+    // std::cin >> s;
 
     // std::cout << extract("", '[', ']') << std::endl;
     // std::cout << extract(" ", '[', ']') << std::endl;
@@ -72,23 +122,23 @@ main()
     // }
     // std::cout << std::endl;
 
-    const char locale[] = "ru_RU.UTF-8";
-    const size_t model_order = 2;
+    // const char locale[] = "ru_RU.UTF-8";
+    // const size_t model_order = 2;
 
-    std::string res;
+    // std::string res;
 
-    StrFilter filter;
-    filter.process(data1, locale);
-    filter.process(data2, locale);
-    filter.process(data3, locale);
+    // StrFilter filter;
+    // filter.process(data1, locale);
+    // filter.process(data2, locale);
+    // filter.process(data3, locale);
 
-    // MarkovModel model(model_order);
-    // MarkovModelTutor tutor;
-    MarkovModelSerializer serializer;
+    // // MarkovModel model(model_order);
+    // // MarkovModelTutor tutor;
+    // MarkovModelSerializer serializer;
 
-    std::istringstream os1(data_src1);
-    MarkovModel model1 = serializer.from_stream(os1);
-    serializer.to_stream(model1, std::cout);
+    // std::istringstream os1(data_src1);
+    // MarkovModel model1 = serializer.from_stream(os1);
+    // serializer.to_stream(model1, std::cout);
 
     // std::istringstream os2(data_src2);
     // MarkovModel model2 = serializer.from_stream(os2);
@@ -118,77 +168,3 @@ main()
 
     return EXIT_SUCCESS;
 }
-
-
-
-
-
-// #include <unordered_map>
-// #include <iostream>
-// #include <cstddef>
-// #include <cstdlib>
-// #include <random>
-// #include <string>
-// #include <list>
-
-// using Atom = std::string;
-// using Transition = std::unordered_map<Atom, size_t>;
-// using Basket = std::list<Atom>;
-
-// size_t
-// sum_transitions_weights(const Transition &tr)
-// {
-//     size_t sum = 0;
-
-//     for (auto &item : tr) {
-//         sum += item.second;
-//     }
-
-//     return sum;
-// }
-
-// std::string
-// random_str(const Transition &tr, size_t v)
-// {
-//     for (auto &item : tr) {
-//         if (v < item.second)
-//             return item.first;
-//         v -= item.second;
-//     }
-//     return tr.begin()->first;
-// }
-
-// int
-// main()
-// {
-//     Transition tr = {
-//         {"apple", 70},
-//         {"mango", 30},
-//         {"banan", 10},
-//     };
-
-//     std::random_device dev;
-//     std::mt19937 gen(dev());
-//     std::string s;
-
-//     Basket apple, mango, banan;
-
-//     for (int i = 0; i != 1000; ++i) {
-//         std::uniform_int_distribution<size_t> distr(0, sum_transitions_weights(tr));
-//         s = random_str(tr, distr(gen));
-
-//         if (s == "apple")
-//             apple.emplace_back(std::move(s));
-//         else if (s == "mango")
-//             mango.emplace_back(std::move(s));
-//         else if (s == "banan")
-//             banan.emplace_back(std::move(s));
-//     }
-
-//     std::cout << "apple basket : " << apple.size() << "\n";
-//     std::cout << "mango basket : " << mango.size() << "\n";
-//     std::cout << "banan basket : " << banan.size() << "\n";
-//     // size_t n = distr(gen);
-
-//     return EXIT_SUCCESS;
-// }
