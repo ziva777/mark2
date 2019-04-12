@@ -32,10 +32,10 @@ set(HEADERS2
 		markov_model.h)
 
 
-add_executable(mark2_prod ${SOURCES1})
+add_executable(mark2 ${SOURCES1})
 add_executable(mark2_cons ${SOURCES2})
 
-target_compile_features(mark2_prod 
+target_compile_features(mark2
 	PUBLIC 
 		cxx_std_14)
 target_compile_features(mark2_cons 
