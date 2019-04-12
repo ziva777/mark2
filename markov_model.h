@@ -25,12 +25,6 @@ public:
 
     size_t order() const { return order_; }
 
-    // StateMachineItr begin() { return machine_.begin(); };
-    // StateMachineItr end() { return machine_.end(); };
-
-    // StateMachineCItr cbegin() const { return machine_.begin(); };
-    // StateMachineCItr cend() const { return machine_.end(); };
-
     StateMachine::iterator begin() { return machine_.begin(); }
     StateMachine::iterator end() { return machine_.end(); }
     StateMachine::const_iterator begin() const { return machine_.begin(); }

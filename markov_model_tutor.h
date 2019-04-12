@@ -13,6 +13,7 @@ public:
             MarkovModel &model,
             std::string &&data,
             bool calc_weights = false);
+    
 private:
     using TokensItr = std::istream_iterator<std::string>;
 
