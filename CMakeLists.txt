@@ -8,13 +8,15 @@ set(SOURCES1
 		str_filter.cpp
 		misc.cpp
 		markov_model.cpp
-		markov_model_tutor.cpp)
+		markov_model_tutor.cpp
+		markov_model_serializer.cpp)
 set(HEADERS1 
 		base_types.h
 		str_filter.h
 		misc.h
 		markov_model.h
-		markov_model_tutor.h)
+		markov_model_tutor.h
+		markov_model_serializer.h)
 
 
 set(SOURCES2 
