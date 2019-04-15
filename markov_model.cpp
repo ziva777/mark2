@@ -119,8 +119,29 @@ MarkovModel::generate(
     bool stop = false;
     std::random_device random_device;
     std::mt19937_64 random_generator(random_device());
+
+    while (n-- && !stop) {
+        try {
+            auto &transitions = machine_.at(origin);
+
+            if (!std::get<TRANSITIONS_ID>(transitions).empty()) {
+                std::string s = 
+                    transition_choice(
+                        std::get<TRANSITIONS_ID>(transitions),
+                        std::get<WEIGHST_ID>(transitions), 
+                        random_generator);
+                ss << s << " ";
+                origin.push_back(s);
+                origin.pop_front();
+            } else {
+                stop = true;
+            }
+        } catch (const std::out_of_range &) {
+            stop = true;
+        }
+    }
     
-    for (; n && !stop; --n) {
+    /*for (; n && !stop; --n) {
         bool goon = true;
 
         for (auto itr = machine_.begin(); 
@@ -144,7 +165,7 @@ MarkovModel::generate(
                 }
             }            
         }
-    }
+    }*/
 
     return ss.str();
 }

@@ -116,15 +116,6 @@ App::create_mode_(const std::string &arg)
 int 
 App::exec_mode_(const std::string &arg)
 {
-    auto bash_prompt = [](size_t order){
-        std::cout << msg_str::ENTER_ORDER_BEGIN 
-                  << order 
-                  << msg_str::ENTER_ORDER_CONT
-                  << msg_str::EXIT_SEQ 
-                  << msg_str::ENTER_ORDER_END 
-                  << "\n"
-                  << msg_str::PHRASE_TO_GEN;
-    };
     auto get_order = [](){
         size_t order = 0;
         std::string line;
@@ -186,8 +177,14 @@ App::exec_mode_(const std::string &arg)
     MarkovModel model = load_from_file_(arg);
     StrFilter filter;
 
-    std::cout << msg_str::MODEL_IS_READY << "\n";
-    bash_prompt(model.order());
+    std::cout << msg_str::MODEL_IS_READY << "\n"
+              << msg_str::ENTER_ORDER_BEGIN 
+              << model.order() 
+              << msg_str::ENTER_ORDER_CONT
+              << msg_str::EXIT_SEQ 
+              << msg_str::ENTER_ORDER_END 
+              << "\n"
+              << msg_str::PHRASE_TO_GEN;
 
     for (std::string line; std::getline(std::cin, line);) {
         if (!line.empty()) {

@@ -30,7 +30,7 @@ MarkovModelSerializer::to_stream(
 
         for (auto &transition : std::get<TRANSITIONS_ID>(transitions)) {
             if (comma)
-                v += ", ";
+                v += ",";
 
             v += transition.first;
             v += ":";
