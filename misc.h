@@ -15,7 +15,7 @@ struct StringJoin {
     {
         if (a.empty())
             return b;
-        return a + "," + b;
+        return a + spacer + b;
     }
 };
 

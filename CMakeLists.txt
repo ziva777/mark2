@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(mark2)
+set(CMAKE_CXX_COMPILER g++)
+project(mark2 VERSION 0.0.1 LANGUAGES CXX)
 
 set(SOURCES1 
 		main.cpp 
@@ -23,8 +24,20 @@ set(HEADERS1
 		pipe_read.h
 		app.h)
 
-add_executable(mark2 ${SOURCES1})
+add_executable(
+	${PROJECT_NAME} 
+		${SOURCES1})
+add_executable(
+	test_01 
+		test_01.cpp 
+		misc.cpp)
+add_executable(
+	test_02 test_02.cpp 
+		pipe_base.cpp
+		pipe_read.cpp
+		str_filter.cpp)
 
-target_compile_features(mark2
-	PUBLIC 
-		cxx_std_14)
+set_target_properties(
+	${PROJECT_NAME} PROPERTIES
+	CXX_STANDARD 14
+	CXX_STANDARD_REQUIRED ON)

@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <iostream>
+#include <numeric>
 #include <tuple>
 
 #include "misc.h"
