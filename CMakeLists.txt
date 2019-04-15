@@ -32,10 +32,18 @@ add_executable(
 		test_01.cpp 
 		misc.cpp)
 add_executable(
-	test_02 test_02.cpp 
+	test_02 
+		test_02.cpp 
 		pipe_base.cpp
 		pipe_read.cpp
 		str_filter.cpp)
+add_executable(
+	test_03 
+		test_03.cpp 
+		markov_model.cpp 
+		markov_model_tutor.cpp 
+		markov_model_serializer.cpp 
+		misc.cpp)
 
 set_target_properties(
 	${PROJECT_NAME} PROPERTIES

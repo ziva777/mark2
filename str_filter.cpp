@@ -7,7 +7,7 @@
 void 
 StrFilter::process(
     std::string &data,
-    std::string locale_name)
+    std::string locale_name) const
 {
     _remove_punct(data);
     _to_lower(data, locale_name);
@@ -15,7 +15,7 @@ StrFilter::process(
 
 void 
 StrFilter::_remove_punct(
-    std::string &data)
+    std::string &data) const
 {
     std::replace_if(
             data.begin(), data.end(),
@@ -28,7 +28,7 @@ StrFilter::_remove_punct(
 void 
 StrFilter::_to_lower(
     std::string &data,
-    std::string locale_name)
+    std::string locale_name) const
 {
     std::locale utf8_loc(locale_name);
     std::wstring_convert<

@@ -13,6 +13,39 @@
 const char App::MODE_CREATE_MODEL[] = "c";
 const char App::MODE_EXEC_MODEL[] = "e";
 const char App::LOCALE[] = "ru_RU.UTF-8";
+const char App::CURL_CMD[] = "curl -s ";
+
+namespace msg_str {
+    static const char OOPS[] = "OOPS! ";
+    static const char URLS_EMPTY[] = "The URLs list are empty!";
+    static const char FILE_PROC_ERROR[] = "Can't process file ";
+    static const char ARGS_ERROR[] = "Invalid args!";
+    static const char UNKNOWN_ERROR[] = "unknown error";
+    static const char MODEL_IS_READY[] = "The model is ready!";
+    static const char N_COUNT_TO_GEN[] = "length: ";
+    static const char PHRASE_TO_GEN[] = "phrase: ";
+    static const char GEN_RESULT_PROMPT[] = "=>";
+    static const char ENTER_ORDER_BEGIN[] = "Enter n = ";
+    static const char ENTER_ORDER_CONT[] = " word(s). Or type ";
+    static const char ENTER_ORDER_END[] = " for exit.";
+    static const char BUILD_PROMPT[] = "To build model use: ./mark2 ";
+    static const char RUN_PROMPT[] = "To run model use  : ./mark2 ";
+    static const char BUILD_PROMPT_END[] = " <order>";
+    static const char RUN_PROMPT_END[] = " <model_file>";
+
+    static const char WARN_LESS_TOKENS_BEGIN[] = 
+        "Warning: you are enter less tokens than "
+        "model order. Enter ";
+    static const char WARN_LESS_TOKENS_END[] = 
+        " word(s).";
+    static const char WARN_MORE_TOKENS_BEGIN[] = 
+        "Warning: you are enter more tokens than "
+        "model order, extra tokes are thrown away.";
+    static const char WARN_MORE_TOKENS_END[] = 
+        "";
+
+    static const char EXIT_SEQ[] = "\\q";
+}
 
 
 App::App(
@@ -58,7 +91,7 @@ App::create_mode_(const std::string &arg)
         }
 
         if (urls.empty()) {
-            std::cout << "OOPS! The URLs list are empty!" << std::endl;
+            std::cout << msg_str::OOPS << msg_str::URLS_EMPTY << std::endl;
             return EXIT_FAILURE;
         }
         
@@ -70,11 +103,11 @@ App::create_mode_(const std::string &arg)
         return EXIT_SUCCESS;
 
     } catch (const std::invalid_argument &e) {
-        std::cerr << "OOPS! " << e.what() << std::endl;
+        std::cerr << msg_str::OOPS << e.what() << std::endl;
     } catch (const std::out_of_range &e) {
-        std::cerr << "OOPS! " << e.what() << std::endl;
+        std::cerr << msg_str::OOPS << e.what() << std::endl;
     } catch (...) {
-        std::cerr << "OOPS! unknown error"<< std::endl;
+        std::cerr << msg_str::OOPS << msg_str::UNKNOWN_ERROR << std::endl;
     }
 
     return EXIT_FAILURE;
@@ -84,15 +117,18 @@ int
 App::exec_mode_(const std::string &arg)
 {
     auto bash_prompt = [](size_t order){
-        std::cout << "Enter n = " << order << " word(s). ";
-        std::cout << "Or type \\q for exit.\n";
-        std::cout << "phrase: ";
+        std::cout << msg_str::ENTER_ORDER_BEGIN 
+                  << order 
+                  << msg_str::ENTER_ORDER_CONT
+                  << msg_str::EXIT_SEQ 
+                  << msg_str::ENTER_ORDER_END 
+                  << "\n"
+                  << msg_str::PHRASE_TO_GEN;
     };
     auto get_order = [](){
         size_t order = 0;
         std::string line;
         std::cin >> line;
-
 
         try {
             order = stoll(line);
@@ -102,59 +138,79 @@ App::exec_mode_(const std::string &arg)
 
         return order;
     };
+    auto get_state = [](
+        std::string &&line,
+        const StrFilter &filter,
+        size_t model_order
+    ){
+        trim(line);
+        filter.process(line, LOCALE);
+
+        State state;
+        size_t n_count = 0;
+        auto tokens = split_to_list(std::move(line), ' ');
+        bool ok = false;
+
+        for (auto itr = tokens.begin(); itr != tokens.end(); ++itr) {
+            if (!itr->empty()) {
+                state.emplace_back(*itr);
+                ++n_count;
+            }
+        }
+
+        if (n_count < model_order) {
+            std::cout << msg_str::WARN_LESS_TOKENS_BEGIN
+                      << model_order 
+                      << msg_str::WARN_LESS_TOKENS_END
+                      << "\n";
+
+            ok = false;
+        } else if (n_count != model_order) {
+            std::cout << msg_str::WARN_MORE_TOKENS_BEGIN
+                      << "\n";
+
+            auto itr = state.begin();
+            std::advance(itr, model_order);
+            state.erase(
+                itr,
+                state.end()
+            );
+            ok = true;
+        } else {
+            ok = true;
+        }
+
+        return std::make_pair(state, ok);
+    };
 
     MarkovModel model = load_from_file_(arg);
     StrFilter filter;
 
-    std::cout << "Model is ready!\n";
-
+    std::cout << msg_str::MODEL_IS_READY << "\n";
     bash_prompt(model.order());
 
     for (std::string line; std::getline(std::cin, line);) {
         if (!line.empty()) {
-            if (line == "\\q") {
+            if (line == msg_str::EXIT_SEQ) {
                 return EXIT_SUCCESS;
             }
 
-            trim(line);
-            filter.process(line, LOCALE);
-            auto tokens = split_to_list(std::move(line), ' ');
-
             State state;
-            size_t n_count = 0;
+            bool ok;
+            std::tie(state, ok) = get_state(
+                    std::move(line), filter, model.order());
 
-            for (auto itr = tokens.begin(); itr != tokens.end(); ++itr) {
-                if (!itr->empty()) {
-                    state.emplace_back(*itr);
-                    ++n_count;
-                }
-            }
-
-            if (n_count < model.order()) {
-                std::cout << "Warning: you are enter less tokens than";
-                std::cout << "model order. Enter ";
-                std::cout << model.order() << " word(s).\n";
-                break;
-            } else if (n_count != model.order()) {
-                std::cout << "Warning: you are enter more tokens than ";
-                std::cout << "model order, extra tokes are thrown away.\n";
-                // TODO: remove extra tokens
-                state.erase(
-                    ++(++state.begin())
-                );
-            } 
-
-            {
-                std::cout << "order : ";
+            if (ok) {
+                std::cout << msg_str::N_COUNT_TO_GEN;
                 size_t count = get_order();
 
                 if (count != std::string::npos) {
                     std::string res = model.generate(std::move(state), count);
-                    std::cout << ">" << res << "\n";
+                    std::cout << msg_str::GEN_RESULT_PROMPT << res << "\n";
                 }
-            }
 
-            std::cout << "phrase: ";
+                std::cout << msg_str::PHRASE_TO_GEN;
+            }
         } 
     }
 
@@ -171,12 +227,14 @@ App::unknown_mode_()
 void 
 App::invalid_args_msg_()
 {
-    std::cout << "Invalid args!\n";
-    std::cout << "To build model use: ./mark2 " 
-              << MODE_CREATE_MODEL << " <order>\n";
-    std::cout << "To run model use  : ./mark2 "
-              << MODE_EXEC_MODEL << " <model_file>";
-    std::cout << std::endl;
+    std::cout << msg_str::ARGS_ERROR << "\n"
+              << msg_str::BUILD_PROMPT 
+              << MODE_CREATE_MODEL 
+              << msg_str::BUILD_PROMPT_END << "\n"
+              << msg_str::RUN_PROMPT
+              << MODE_EXEC_MODEL 
+              << msg_str::RUN_PROMPT_END
+              << std::endl;
 }
 
 MarkovModel 
@@ -190,7 +248,7 @@ App::create_model_from_urls_(
     PipeRead pipe;
 
     for (auto &url: urls) {
-        std::string cmd = "curl -s " + url;
+        std::string cmd = CURL_CMD + url;
         auto res = pipe.read(cmd);
 
         if (res.second) {
@@ -199,8 +257,10 @@ App::create_model_from_urls_(
                 tutor.train(model, std::move(res.first), false);
             }
         } else {
-            std::cerr << "OOPS! Can't process file ";
-            std::cerr << url << std::endl;
+            std::cerr << msg_str::OOPS 
+                      << msg_str::FILE_PROC_ERROR
+                      << url 
+                      << std::endl;
         }
     }
 

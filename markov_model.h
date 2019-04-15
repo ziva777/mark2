@@ -12,6 +12,7 @@ public:
     MarkovModel(size_t order);
 
     void calc_weights();
+    
     void place(
             const State &state, 
             const Atom &atom);
