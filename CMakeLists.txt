@@ -7,6 +7,7 @@ set(SOURCES1
 		main.cpp 
 		str_filter.cpp
 		misc.cpp
+		formatter.cpp
 		markov_model.cpp
 		markov_model_tutor.cpp
 		markov_model_serializer.cpp
@@ -17,6 +18,7 @@ set(HEADERS1
 		base_types.h
 		str_filter.h
 		misc.h
+		formatter.h
 		markov_model.h
 		markov_model_tutor.h
 		markov_model_serializer.h
@@ -43,7 +45,8 @@ add_executable(
 		markov_model.cpp 
 		markov_model_tutor.cpp 
 		markov_model_serializer.cpp 
-		misc.cpp)
+		misc.cpp
+		formatter.cpp)
 
 set_target_properties(
 	${PROJECT_NAME} PROPERTIES

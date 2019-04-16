@@ -39,3 +39,10 @@ PipeBase::get_(
 {
     return fgets(buff, buff_size, pipe_);
 }
+
+void 
+PipeBase::log_error_(
+        const std::string &msg)
+{
+
+}

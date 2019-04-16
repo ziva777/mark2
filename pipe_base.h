@@ -20,6 +20,8 @@ protected:
     char * get_(
             char *buff,
             int buff_size);
+    void log_error_(
+            const std::string &msg);
 };
 
 #endif // __pipe_base_h__

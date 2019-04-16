@@ -1,8 +1,8 @@
 #include "str_filter.h"
 
-#include <locale>
-#include <codecvt>
 #include <algorithm>
+#include <codecvt>
+#include <locale>
 
 void 
 StrFilter::process(

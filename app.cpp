@@ -5,7 +5,6 @@
 
 #include "misc.h"
 #include "pipe_read.h"
-#include "str_filter.h"
 #include "markov_model.h"
 #include "markov_model_tutor.h"
 #include "markov_model_serializer.h"
@@ -116,102 +115,59 @@ App::create_mode_(const std::string &arg)
 int 
 App::exec_mode_(const std::string &arg)
 {
-    auto get_order = [](){
-        size_t order = 0;
-        std::string line;
-        std::cin >> line;
+    try {
+        MarkovModel model = load_from_file_(arg);
 
-        try {
-            order = stoll(line);
-        } catch (...) {
-            order = std::string::npos;            
-        }
+        StrFilter filter;
 
-        return order;
-    };
-    auto get_state = [](
-        std::string &&line,
-        const StrFilter &filter,
-        size_t model_order
-    ){
-        trim(line);
-        filter.process(line, LOCALE);
+        std::cout << msg_str::MODEL_IS_READY 
+                  << "\n"
+                  << msg_str::ENTER_ORDER_BEGIN 
+                  << model.order() 
+                  << msg_str::ENTER_ORDER_CONT
+                  << msg_str::EXIT_SEQ 
+                  << msg_str::ENTER_ORDER_END 
+                  << "\n"
+                  << msg_str::PHRASE_TO_GEN;
 
-        State state;
-        size_t n_count = 0;
-        auto tokens = split_to_list(std::move(line), ' ');
-        bool ok = false;
-
-        for (auto itr = tokens.begin(); itr != tokens.end(); ++itr) {
-            if (!itr->empty()) {
-                state.emplace_back(*itr);
-                ++n_count;
-            }
-        }
-
-        if (n_count < model_order) {
-            std::cout << msg_str::WARN_LESS_TOKENS_BEGIN
-                      << model_order 
-                      << msg_str::WARN_LESS_TOKENS_END
-                      << "\n";
-
-            ok = false;
-        } else if (n_count != model_order) {
-            std::cout << msg_str::WARN_MORE_TOKENS_BEGIN
-                      << "\n";
-
-            auto itr = state.begin();
-            std::advance(itr, model_order);
-            state.erase(
-                itr,
-                state.end()
-            );
-            ok = true;
-        } else {
-            ok = true;
-        }
-
-        return std::make_pair(state, ok);
-    };
-
-    MarkovModel model = load_from_file_(arg);
-    StrFilter filter;
-
-    std::cout << msg_str::MODEL_IS_READY << "\n"
-              << msg_str::ENTER_ORDER_BEGIN 
-              << model.order() 
-              << msg_str::ENTER_ORDER_CONT
-              << msg_str::EXIT_SEQ 
-              << msg_str::ENTER_ORDER_END 
-              << "\n"
-              << msg_str::PHRASE_TO_GEN;
-
-    for (std::string line; std::getline(std::cin, line);) {
-        if (!line.empty()) {
-            if (line == msg_str::EXIT_SEQ) {
-                return EXIT_SUCCESS;
-            }
-
-            State state;
-            bool ok;
-            std::tie(state, ok) = get_state(
-                    std::move(line), filter, model.order());
-
-            if (ok) {
-                std::cout << msg_str::N_COUNT_TO_GEN;
-                size_t count = get_order();
-
-                if (count != std::string::npos) {
-                    std::string res = model.generate(std::move(state), count);
-                    std::cout << msg_str::GEN_RESULT_PROMPT << res << "\n";
+        for (std::string line; std::getline(std::cin, line);) {
+            if (!line.empty()) {
+                if (line == msg_str::EXIT_SEQ) {
+                    return EXIT_SUCCESS;
                 }
 
-                std::cout << msg_str::PHRASE_TO_GEN;
-            }
-        } 
+                State state;
+                bool ok;
+                std::tie(state, ok) = get_state_(
+                        std::move(line), filter, model.order());
+
+                if (ok) {
+                    std::cout << msg_str::N_COUNT_TO_GEN;
+                    size_t count = get_order_from_cin_();
+
+                    if (count != std::string::npos) {
+                        std::string res = 
+                            model.generate(std::move(state), count);
+                        std::cout << msg_str::GEN_RESULT_PROMPT << res << "\n";
+                    }
+
+                    std::cout << msg_str::PHRASE_TO_GEN;
+                }
+            } 
+        }
+
+        return EXIT_SUCCESS;
+    } catch (const std::invalid_argument &e) {
+        std::cerr << msg_str::OOPS << e.what() << std::endl;
+    } catch (const std::out_of_range &e) {
+        std::cerr << msg_str::OOPS << e.what() << std::endl;
+    } catch (const std::logic_error &e) {
+        std::cerr << msg_str::OOPS << e.what() << std::endl;
+    } catch (...) {
+        std::cerr << msg_str::OOPS << msg_str::UNKNOWN_ERROR << std::endl;
     }
 
-    return EXIT_SUCCESS;
+    return EXIT_FAILURE;
 }
 
 int 
@@ -282,4 +238,67 @@ App::load_from_file_(
     MarkovModelSerializer serializer;
     MarkovModel model = serializer.from_stream(ss);
     return model;
+}
+
+size_t 
+App::get_order_from_cin_() const
+{
+    size_t order = std::string::npos;
+    std::string line;
+    std::cin >> line;
+
+    try {
+        order = stoll(line);
+    } catch (...) {
+        order = std::string::npos;            
+    }
+
+    return order;
+}
+
+std::pair<
+    State, bool
+> App::get_state_(
+        std::string &&line,
+        const StrFilter &filter,
+        size_t model_order) const
+{
+    trim(line);
+    filter.process(line, LOCALE);
+
+    State state;
+    size_t n_count = 0;
+    auto tokens = split_to_list(std::move(line), ' ');
+    bool ok = false;
+
+    for (auto itr = tokens.begin(); itr != tokens.end(); ++itr) {
+        if (!itr->empty()) {
+            state.emplace_back(*itr);
+            ++n_count;
+        }
+    }
+
+    if (n_count < model_order) {
+        std::cout << msg_str::WARN_LESS_TOKENS_BEGIN
+                  << model_order 
+                  << msg_str::WARN_LESS_TOKENS_END
+                  << "\n";
+
+        ok = false;
+    } else if (n_count != model_order) {
+        std::cout << msg_str::WARN_MORE_TOKENS_BEGIN
+                  << "\n";
+
+        auto itr = state.begin();
+        std::advance(itr, model_order);
+        state.erase(
+            itr,
+            state.end()
+        );
+        ok = true;
+    } else {
+        ok = true;
+    }
+
+    return std::make_pair(state, ok);
 }

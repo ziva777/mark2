@@ -6,6 +6,11 @@
 
 #include "misc.h"
 
+namespace msg_str {
+    static const char GENERATE_ERROR[] = 
+        "Origin state not eq to order of model!";
+}
+
 auto random_transition_choice = [](
     const Transitions &transitions, 
     size_t random_weight
@@ -107,7 +112,7 @@ MarkovModel::generate(
         size_t n) const
 {
     if (origin.size() != order_) {
-        throw std::logic_error("Origin state not eq to order of model!");
+        throw std::logic_error(msg_str::GENERATE_ERROR);
     }
 
     std::stringstream ss;
@@ -140,32 +145,6 @@ MarkovModel::generate(
             stop = true;
         }
     }
-    
-    /*for (; n && !stop; --n) {
-        bool goon = true;
-
-        for (auto itr = machine_.begin(); 
-            itr != machine_.end() && goon; 
-            ++itr) 
-        {
-            if (origin == itr->first) {
-                auto &transitions = itr->second;
-                goon = false;
-                stop = std::get<TRANSITIONS_ID>(transitions).empty();
-
-                if (!stop) {
-                    std::string s = 
-                        transition_choice(
-                            std::get<TRANSITIONS_ID>(transitions),
-                            std::get<WEIGHST_ID>(transitions), 
-                            random_generator);
-                    ss << s << " ";
-                    origin.pop_front();
-                    origin.push_back(s);
-                }
-            }            
-        }
-    }*/
 
     return ss.str();
 }

@@ -3,6 +3,13 @@
 #include <iostream>
 #include <sstream>
 
+namespace msg_str {
+    static const char CMD_EXEC_FAIL[] = "Cmd exit unsuccessfully :";
+    static const char CANNOT_PIPE[] = "Can't pipe cmd :";
+}
+
+const char PipeRead::MODE[] = "r";
+
 std::pair<
     std::string, bool
 > PipeRead::read(
@@ -10,13 +17,14 @@ std::pair<
 {
     bool ok = false;
     std::stringstream ss;
+#   ifdef STATIC_IO_BUFFER
+    static 
+#   endif
+    char buff[BUFF_SIZE] = {0};
 
-    if (open_(cmd, "r")) {
-        char *s;
-        static char buff[BUFF_SIZE] = {0};
-
+    if (open_(cmd, MODE)) {
         while (!is_eof_()) {
-            if ((s = get_(buff, BUFF_SIZE)) != nullptr) {
+            if (get_(buff, BUFF_SIZE) != nullptr) {
                 ss << buff;
             }
         }
@@ -24,12 +32,10 @@ std::pair<
         if (close_() == 0) {
             ok = true;
         } else {
-            std::cerr << "Cmd exit unsuccessfully :" << cmd;
-            std::cerr << std::endl;
+            log_error_(msg_str::CMD_EXEC_FAIL + cmd);
         }
     } else {
-        std::cerr << "Can't pipe cmd :" << cmd;
-        std::cerr << std::endl;
+        log_error_(msg_str::CANNOT_PIPE + cmd);
     }
 
     return std::make_pair(ss.str(), ok);

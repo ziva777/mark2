@@ -2,48 +2,25 @@
 
 #include <stdexcept>
 #include <iostream>
+#include <sstream>
 #include <numeric>
 #include <tuple>
 
 #include "misc.h"
+
+namespace msg_str {
+    static const char LINE_PARSE_ERROR[] = "Error - can't parse line #";
+    static const char ORDER_PARSE_ERROR[] = "Can't parse the model order!";
+    static const char NO_DATA_ERROR[] = "Input stream are empty!";
+}
 
 void 
 MarkovModelSerializer::to_stream(
         const MarkovModel &model, 
         std::ostream &stream)
 {
-    StringJoin str_sum{","};
-    stream << "order:" << std::to_string(model.order()) << "\n";
-
-    for (auto itr = model.begin(); itr != model.end(); ++itr) {
-        auto &item = *itr;
-        auto &state = item.first;
-        auto &transitions = item.second;
-
-        std::string k = std::accumulate(
-            state.begin(), state.end(), std::string(),
-            str_sum
-        );
-
-        std::string v;
-        bool comma = false;
-
-        for (auto &transition : std::get<TRANSITIONS_ID>(transitions)) {
-            if (comma)
-                v += ",";
-
-            v += transition.first;
-            v += ":";
-            v += std::to_string(transition.second);
-
-            comma = true;
-        }
-
-        stream << "[" << k << "] \t: [{" << v << "}";
-        stream << ", " 
-               << std::to_string(std::get<WEIGHST_ID>(transitions)) 
-               << "]\n";
-    }
+    serialize_order_(model, stream);
+    serialize_model_(model, stream);
 }
 
 MarkovModel 
@@ -56,52 +33,98 @@ MarkovModelSerializer::from_stream(
         auto res = parse_order_(std::move(s));
         bool ok = res.second;
         size_t order = res.first;
-        MarkovModel model(order);
 
         if (ok) {
-            size_t count = 0;
+            MarkovModel model(order);
 
-            while (std::getline(stream, s)) {
+            for (size_t count = 0; std::getline(stream, s); ++count) {
                 auto res = parse_model_(std::move(s));
-                State &state = std::get<0>(res);
-                TransitionsWithWeights &tr = std::get<1>(res);
-                bool ok = std::get<2>(res);
-
-                ++count;
-
-                // std::cout << "STATES:\n";
-                // for (auto item : state) {
-                //     std::cout << item << " ";
-                // }
-                // std::cout << "\n";
-
-                // std::cout << "TRANSITIONS:\n";
-                Transitions t = std::get<0>(tr);
-                size_t w = std::get<1>(tr);
-
-                // for (auto &item : t) {
-                //     std::cout << item.first << " : ";
-                //     std::cout << item.second << " ";
-                // }
-                // std::cout << "\n";
-
+                bool ok = res.second;
+                
                 if (ok) {
+                    auto &state = res.first.first;
+                    auto &tr = res.first.second;
                     model.place(std::move(state), std::move(tr));
                 } else {
-                    std::cerr << "Error - can't parse line #";
-                    std::cerr << count << "\n";
+                    std::cerr 
+                        << msg_str::LINE_PARSE_ERROR << count << "\n";
                 }
             }
 
             return model;
         } else {
-            throw std::logic_error("Can't parse the model order!");
+            throw std::logic_error(msg_str::ORDER_PARSE_ERROR);
         }
     } else {
-        throw std::logic_error("Input stream are empty!");
+        throw std::logic_error(msg_str::NO_DATA_ERROR);
     }
 
     return MarkovModel{0};
+}
+
+void 
+MarkovModelSerializer::serialize_order_(
+    const MarkovModel &model, 
+    std::ostream &stream)
+{
+    stream << formatter_.order_key
+           << formatter_.order_sep
+           << std::to_string(model.order()) 
+           << "\n";
+}
+
+void 
+MarkovModelSerializer::serialize_model_(
+    const MarkovModel &model, 
+    std::ostream &stream)
+{
+    for (auto itr = model.begin(); itr != model.end(); ++itr) {
+        auto &state = itr->first;
+        auto &transitions = itr->second;
+
+        std::string k = serialize_model_state_(state);
+        std::string v = serialize_model_transitions_(transitions);
+
+        stream << formatter_.list_begin << k << formatter_.list_end;
+        stream << " " << formatter_.state_transition_sep << " ";
+        stream << formatter_.list_begin << v << formatter_.list_end;
+        stream << "\n";
+    }
+}
+
+std::string 
+MarkovModelSerializer::serialize_model_state_(
+    const State &state)
+{
+    return std::accumulate(
+        state.begin(), state.end(), std::string(),
+        StringJoin{std::string(1, formatter_.item_sep)}
+    );
+}
+
+std::string 
+MarkovModelSerializer::serialize_model_transitions_(
+    const TransitionsWithWeights &wt)
+{
+    std::string v;
+    bool comma = false;
+
+    for (auto &transition : std::get<TRANSITIONS_ID>(wt)) {
+        if (comma)
+            v += formatter_.dict_sep;
+
+        v += transition.first;
+        v += formatter_.dict_kv_sep;
+        v += std::to_string(transition.second);
+
+        comma = true;
+    }
+
+    std::stringstream ss;
+    ss << formatter_.dict_begin << v << formatter_.dict_end;
+    ss << formatter_.item_sep;
+    ss << std::to_string(std::get<WEIGHST_ID>(wt));
+    return ss.str();
 }
 
 std::pair<
@@ -113,9 +136,9 @@ std::pair<
     bool ok = false;
 
     if (!s.empty()) {
-        auto res = split_left(std::move(s), ':');
+        auto res = split_left(std::move(s), formatter_.order_sep);
 
-        if (res.first == "order") {
+        if (res.first == formatter_.order_key) {
             order = std::stoll(res.second);
             ok = true;
         }
@@ -132,14 +155,20 @@ std::pair<
     State st{};
     bool ok = false;
 
-    s = extract(std::move(s), '[', ']');
-    auto l = split_to_list(std::move(s), ',');
+    auto l = split_to_list(
+        std::move(
+            extract(
+                std::move(s), 
+                formatter_.list_begin, 
+                formatter_.list_end)
+        ), 
+        formatter_.item_sep
+    );
 
     for (auto &item : l) {
         st.push_back(std::move(item));
         ok = true;
     }
-
 
     return std::make_pair(std::move(st), ok);
 }
@@ -147,55 +176,46 @@ std::pair<
 std::pair<
     TransitionsWithWeights, bool
 > MarkovModelSerializer::parse_model_transitions_(
-    std::string &&s) const
+        std::string &&s) const
 {
-    auto parse_transitions = [](
-        std::string &&s
-    ) {
-        Transitions ret{};
-        auto l = split_to_list(std::move(s), ',');
-
-        for (auto item : l) {
-            auto res = split_left(std::move(item), ':');
-            auto &k = res.first;
-            auto v = std::stoll(res.second);
-            ret.emplace(k, v);
-            // tmp[k] = v;
-        }
-
-        bool ok = true;
-        return std::make_pair(ret, ok);
-    };
-
-    auto parse_weight = [](
-        std::string &&s
-    ) {
-        bool ok = true;
-        size_t w = std::stoll(s);
-        return std::make_pair(w, ok);
-    };
-
     bool ok = false;
-
-    s = extract(std::move(s), '[', ']');
-    auto l = split_right(std::move(s), ',');
+    auto l = split_right(
+        std::move(
+            extract(
+                std::move(s), 
+                formatter_.list_begin, formatter_.list_end
+            )
+        ), 
+        formatter_.item_sep
+    );
     auto &s_t = l.first;
     auto &s_w = l.second;
 
-    s_t = extract(std::move(s_t), '{', '}');
+    s_t = extract(
+        std::move(s_t), 
+        formatter_.dict_begin, formatter_.dict_end
+    );
 
     Transitions tr;
     size_t tr_w;
     bool tr_ok, tr_w_ok;
-    std::tie(tr, tr_ok) = parse_transitions(std::move(s_t));
-    std::tie(tr_w, tr_w_ok) = parse_weight(std::move(s_w));
+    std::tie(tr, tr_ok) = parse_transitions_(std::move(s_t));
+    std::tie(tr_w, tr_w_ok) = parse_weight_(std::move(s_w));
     ok = tr_ok && tr_w_ok;
 
-    return std::make_pair(std::move(TransitionsWithWeights{tr, tr_w}), ok);
+    return std::make_pair(
+        std::move(
+            TransitionsWithWeights{
+                std::move(tr), tr_w
+            }
+        ), 
+        ok
+    );
 }
 
-std::tuple<
-    State, TransitionsWithWeights, bool
+std::pair<
+    std::pair<State, TransitionsWithWeights>, 
+    bool
 > MarkovModelSerializer::parse_model_(
         std::string &&s) const
 {
@@ -203,7 +223,7 @@ std::tuple<
     std::string s_st, s_tr;
 
     std::tie(s_st, s_tr) =
-        split_left(std::move(s), ':');
+        split_left(std::move(s), formatter_.state_transition_sep);
 
     auto res_st = parse_model_state_(std::move(s_st));
     auto res_tr = parse_model_transitions_(std::move(s_tr));
@@ -212,5 +232,44 @@ std::tuple<
 
     ok = res_st.second && res_tr.second;
 
-    return std::make_tuple(std::move(st), std::move(tr), std::move(ok));
+    return std::make_pair(
+            std::make_pair(std::move(st), std::move(tr)), 
+            std::move(ok));
+}
+
+std::pair<
+    Transitions, bool
+> MarkovModelSerializer::parse_transitions_(
+        std::string &&s) const
+{
+    bool ok = true;
+    Transitions ret{};
+    auto l = split_to_list(std::move(s), formatter_.dict_sep);
+
+    for (auto item : l) {
+        auto res = split_left(std::move(item), formatter_.dict_kv_sep);
+        auto &k = res.first;
+        auto v = std::stoll(res.second);
+        ret.emplace(k, v);
+        // tmp[k] = v;
+    }
+
+    return std::make_pair(ret, ok);
+}
+
+std::pair<
+    size_t, bool
+> MarkovModelSerializer::parse_weight_(
+        std::string &&s) const
+{
+    bool ok = true;
+    size_t w = 0;
+
+    try {
+        w = std::stoll(s);
+    } catch (...) {
+        ok = false;
+    }
+
+    return std::make_pair(w, ok); 
 }

@@ -6,6 +6,8 @@
 
 #include "pipe_base.h"
 
+#define STATIC_IO_BUFFER
+
 
 class PipeRead : public PipeBase {
 public:
@@ -15,6 +17,7 @@ public:
             std::string cmd);
 private:
     static const int BUFF_SIZE = 1024;
+    static const char MODE[];
 };
 
 
