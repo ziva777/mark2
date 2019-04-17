@@ -27,7 +27,8 @@ public:
 
         std::string operator * () {
             auto from = itr_;
-            auto to = std::find_if(itr_, end_, [&](char c) { return c == sep_; });
+            auto to = std::find_if(
+                    itr_, end_, [&](char c) { return c == sep_; });
             auto n = std::distance(from, to);
 
             std::string tmp;
