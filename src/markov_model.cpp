@@ -39,9 +39,8 @@ std::string transition_choice(
 
 MarkovModel::MarkovModel(
         size_t order)
-: order_(order)
+: order_{order}
 {
-    
 }
 
 void 

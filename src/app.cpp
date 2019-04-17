@@ -203,11 +203,13 @@ App::create_model_from_urls_(
     for (auto &url: urls) {
         std::string cmd = CURL_CMD + url;
         auto res = pipe.read(cmd);
+        auto &data = res.first;
+        auto ok = res.second;
 
-        if (res.second) {
-            if (!res.first.empty()) {
-                filter.process(res.first, LOCALE);
-                tutor.train(model, std::move(res.first), false);
+        if (ok) {
+            if (!data.empty()) {
+                filter.process(data, LOCALE);
+                tutor.train(model, std::move(data), false);
             }
         } else {
             std::cerr << msg_str::OOPS 

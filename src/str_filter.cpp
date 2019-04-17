@@ -34,7 +34,7 @@ StrFilter::_to_lower(
     std::wstring_convert<
         std::codecvt_utf8<wchar_t>
     > conv;
-    std::wstring ws = conv.from_bytes(data);
+    std::wstring ws = conv.from_bytes(std::move(data));
 
     std::transform(
         ws.begin(), ws.end(),

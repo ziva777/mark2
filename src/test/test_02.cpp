@@ -2,8 +2,8 @@
 #include <cstdlib>
 #include <cassert>
 
-#include "pipe_read.h"
-#include "str_filter.h"
+#include "../pipe_read.h"
+#include "../str_filter.h"
 
 void
 test_02_1()
@@ -21,7 +21,7 @@ void
 test_02_2()
 {
     StrFilter filter;
-    static const char LOCALE[] = "ru_RU.UTF-8";
+    const char LOCALE[] = "ru_RU.UTF-8";
     std::string s;
 
     s = "hi";

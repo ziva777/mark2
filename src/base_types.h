@@ -31,18 +31,17 @@ using StateMachine = std::unordered_map<
 
 
 struct StateHash {
-    size_t operator()(const State &state) const 
+    size_t operator()(
+            const State &state) const 
     {
-        std::string s = std::accumulate(
-            state.begin(), state.end(), std::string(),
-            [](
-                const std::string &a,
-                const std::string &b
-            ) {
-                return a + '_' + b;
+        return std::accumulate(
+            state.begin(), state.end(), size_t{0},
+            [](size_t hash, const std::string &s){
+                size_t h = std::hash<std::string>{}(s);
+                hash ^= h + 0x9e3779b9 + (hash) + (hash << 6) + (h >> 2);
+                return hash;
             }
         );
-        return std::hash<std::string>()(s);
     };
 };
 

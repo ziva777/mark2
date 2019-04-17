@@ -5,7 +5,7 @@
 #include <string>
 #include <list>
 
-#include "misc.h"
+#include "../misc.h"
 
 
 void

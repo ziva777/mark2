@@ -180,11 +180,9 @@ std::pair<
 {
     bool ok = false;
     auto l = split_right(
-        std::move(
-            extract(
-                std::move(s), 
-                formatter_.list_begin, formatter_.list_end
-            )
+        extract(
+            std::move(s), 
+            formatter_.list_begin, formatter_.list_end
         ), 
         formatter_.item_sep
     );

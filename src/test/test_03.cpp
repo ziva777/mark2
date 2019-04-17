@@ -2,9 +2,9 @@
 #include <sstream>
 #include <cassert>
 
-#include "markov_model.h"
-#include "markov_model_tutor.h"
-#include "markov_model_serializer.h"
+#include "../markov_model.h"
+#include "../markov_model_tutor.h"
+#include "../markov_model_serializer.h"
 
 void 
 test_03_1()
