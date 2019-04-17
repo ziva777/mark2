@@ -43,6 +43,12 @@ add_executable(
 		${SRC}/test/test_04.cpp
 		${SRC}/string_view.cpp)
 
+
+# Fix behavior of CMAKE_CXX_STANDARD when targeting macOS.
+if (POLICY CMP0025)
+	add_definitions(-std=c++14)
+endif ()
+
 set_target_properties(
 	${PROJECT_NAME} PROPERTIES
 	CXX_STANDARD 14

@@ -2,6 +2,8 @@
 #define __string_view_h__
 
 #include <algorithm>
+#include <iterator>
+// #include <iostream>
 #include <string>
 
 
@@ -11,13 +13,11 @@ public:
     public:
         Itr(std::string &data, 
             std::string::value_type sep)
-            : itr_{data.begin()}, begin_{data.begin()}, 
-                end_{data.end()}, sep_{sep} 
+            : itr_{std::find(data.begin(), data.end(), sep)}, 
+              begin_{data.begin()}, 
+              end_{data.end()}, 
+              sep_{sep} 
         {
-            // TODO: move to operator *
-            while (itr_ != end_ && *itr_ == sep_) {
-                ++itr_;
-            }
         }
 
         Itr(std::string::iterator itr, 
@@ -26,32 +26,22 @@ public:
                 end_{itr}, sep_{sep} {}
 
         std::string operator * () {
-            // TODO: optimize
-            std::string tmp;
-            for (auto itr = itr_; itr != end_; ++itr) {
-                if (*itr != sep_) {
-                    tmp.push_back(*itr);
-                } else {
-                    break;
-                }
+            auto from = itr_;
+            auto to = std::find_if(itr_, end_, [&](char c) { return c == sep_; });
+            auto n = std::distance(from, to);
 
-            }
+            std::string tmp;
+            tmp.resize(n);
+            std::copy(from, to, tmp.begin());
+
             return tmp;
         }
 
         Itr & operator ++ () {
-            for (;itr_ != end_; ++itr_) {
-                if (*itr_ == sep_) {
-                    break;
-                }
-            }
-
-            for (;itr_ != end_; ++itr_) {
-                if (*itr_ != sep_) {
-                    break;
-                }
-            }
-
+            // pass symbols to the first separator
+            itr_ = std::find_if(itr_, end_, [&](char c) { return c == sep_; });
+            // pass all separators until first symbol
+            itr_ = std::find_if(itr_, end_, [&](char c) { return c != sep_; });
             return *this;
         }
 
