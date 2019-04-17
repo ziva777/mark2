@@ -11,26 +11,31 @@ void
 MarkovModelTutor::train(
         MarkovModel &model,
         std::string &&data,
-        bool calc_weights)
+        bool calc_weights,
+        char data_tokes_sep)
 {
-    std::istringstream iss(data);
-    TokensItr begin{iss}, end{};
+    // std::istringstream iss(data);
+    // std::istream_iterator<std::string> begin{iss}, end{};
+    // train_from_itr_(model, begin, end);
 
-    train_from_itr_(model, begin, end);
+    char sep = ' ';
+    StringView view(std::move(data));
+    train_from_itr_(model, view.begin(sep), view.end(sep));
 
     if (calc_weights)
         model.calc_weights();
 }
 
+template<typename ITRERATOR>
 void 
 MarkovModelTutor::train_from_itr_(
         MarkovModel &model,
-        TokensItr begin,
-        TokensItr end)
+        ITRERATOR begin,
+        ITRERATOR end)
 {
     State window;
     size_t order = model.order();
-    TokensItr itr = begin;
+    ITRERATOR itr = begin;
 
     for (size_t i = 0; i != order &&  itr != end; ++i, ++itr) {
         window.emplace_back(*itr);

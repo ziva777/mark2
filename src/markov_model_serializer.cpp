@@ -109,7 +109,7 @@ MarkovModelSerializer::serialize_model_transitions_(
     std::string v;
     bool comma = false;
 
-    for (auto &transition : std::get<TRANSITIONS_ID>(wt)) {
+    for (auto &transition : wt.transitions()) {
         if (comma)
             v += formatter_.dict_sep;
 
@@ -123,7 +123,7 @@ MarkovModelSerializer::serialize_model_transitions_(
     std::stringstream ss;
     ss << formatter_.dict_begin << v << formatter_.dict_end;
     ss << formatter_.item_sep;
-    ss << std::to_string(std::get<WEIGHST_ID>(wt));
+    ss << std::to_string(wt.weights_sum());
     return ss.str();
 }
 
@@ -156,12 +156,11 @@ std::pair<
     bool ok = false;
 
     auto l = split_to_list(
-        std::move(
-            extract(
-                std::move(s), 
-                formatter_.list_begin, 
-                formatter_.list_end)
-        ), 
+        extract(
+            std::move(s), 
+            formatter_.list_begin, 
+            formatter_.list_end)
+        , 
         formatter_.item_sep
     );
 

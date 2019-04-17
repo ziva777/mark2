@@ -11,6 +11,7 @@ StrFilter::process(
 {
     _remove_punct(data);
     _to_lower(data, locale_name);
+    _remove_new_lines(data);
 }
 
 void 
@@ -45,4 +46,12 @@ StrFilter::_to_lower(
     );
 
     data = conv.to_bytes(ws);
+}
+
+void 
+StrFilter::_remove_new_lines(
+        std::string &data) const
+{
+    std::replace(data.begin(), data.end(), '\n', ' ');
+    std::replace(data.begin(), data.end(), '\r', ' ');
 }

@@ -15,6 +15,8 @@ private:
     void _to_lower(
             std::string &data,
             std::string locale_name) const;
+    void _remove_new_lines(
+            std::string &data) const;
 };
 
 

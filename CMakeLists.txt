@@ -8,6 +8,7 @@ set(SOURCES1
 		${SRC}/main.cpp 
 		${SRC}/str_filter.cpp
 		${SRC}/misc.cpp
+		${SRC}/string_view.cpp
 		${SRC}/formatter.cpp
 		${SRC}/markov_model.cpp
 		${SRC}/markov_model_tutor.cpp
@@ -39,7 +40,8 @@ add_executable(
 		${SRC}/formatter.cpp)
 add_executable(
 	test_04 
-		${SRC}/test/test_04.cpp)
+		${SRC}/test/test_04.cpp
+		${SRC}/string_view.cpp)
 
 set_target_properties(
 	${PROJECT_NAME} PROPERTIES

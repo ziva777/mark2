@@ -46,22 +46,8 @@ MarkovModel::MarkovModel(
 void 
 MarkovModel::calc_weights()
 {
-    auto sum_transitions_weights = [](
-        const Transitions &transitions
-    ) {
-        size_t sum = 0;
-
-        for (auto &transition : transitions) {
-            sum += transition.second;
-        }
-
-        return sum;
-    };
-
     for (auto &item : machine_) {
-        auto &transitions = item.second;
-        std::get<WEIGHST_ID>(transitions) = 
-            sum_transitions_weights(std::get<TRANSITIONS_ID>(transitions));
+        item.second.calc_weights_sum();
     }
 }
 
@@ -87,7 +73,7 @@ MarkovModel::place(
     bool created = res.second;
 
     if (!created) {
-        Transitions &tr = std::get<TRANSITIONS_ID>(itr->second);
+        Transitions &tr = itr->second.transitions();
         auto res = tr.emplace(atom, 0);
         auto item = res.first;
         ++item->second;
@@ -126,13 +112,13 @@ MarkovModel::generate(
 
     while (n-- && !stop) {
         try {
-            auto &transitions = machine_.at(origin);
+            auto &wt = machine_.at(origin);
 
-            if (!std::get<TRANSITIONS_ID>(transitions).empty()) {
+            if (!wt.transitions().empty()) {
                 std::string s = 
                     transition_choice(
-                        std::get<TRANSITIONS_ID>(transitions),
-                        std::get<WEIGHST_ID>(transitions), 
+                        wt.transitions(),
+                        wt.weights_sum(),
                         random_generator);
                 ss << s << " ";
                 origin.push_back(s);

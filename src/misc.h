@@ -56,41 +56,12 @@ std::list<
         std::string::value_type sep);
 
 /* " trim" -> "trim" */
-inline void
-ltrim(std::string &s)
-{
-    s.erase(
-        s.begin(),
-        std::find_if(
-            s.begin(), s.end(),
-            [](std::string::value_type c) { 
-                return !std::isspace(c); 
-            }
-        )
-    );
-}
+void ltrim(std::string &s);
 
 /* "trim " -> "trim" */
-inline void
-rtrim(std::string &s)
-{
-    s.erase(
-        std::find_if(
-            s.rbegin(), s.rend(),
-            [](std::string::value_type c) { 
-                return !std::isspace(c); 
-            }
-        ).base(), 
-        s.end()
-    );
-}
+void rtrim(std::string &s);
 
 /* " trim " -> "trim" */
-inline void
-trim(std::string &s)
-{
-    ltrim(s);
-    rtrim(s);
-}
+void trim(std::string &s);
 
 #endif // __misc_h__

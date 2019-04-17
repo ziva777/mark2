@@ -68,3 +68,38 @@ std::list<
     res.emplace_back(std::move(buff));
     return res;
 }
+
+void
+ltrim(std::string &s)
+{
+    s.erase(
+        s.begin(),
+        std::find_if(
+            s.begin(), s.end(),
+            [](std::string::value_type c) { 
+                return !std::isspace(c); 
+            }
+        )
+    );
+}
+
+void
+rtrim(std::string &s)
+{
+    s.erase(
+        std::find_if(
+            s.rbegin(), s.rend(),
+            [](std::string::value_type c) { 
+                return !std::isspace(c); 
+            }
+        ).base(), 
+        s.end()
+    );
+}
+
+void
+trim(std::string &s)
+{
+    ltrim(s);
+    rtrim(s);
+}

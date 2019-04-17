@@ -8,26 +8,35 @@
 #include <tuple>
 #include <list>
 
-struct StateHash;
-
-constexpr int TRANSITIONS_ID = 0;
-constexpr int WEIGHST_ID = 1;
-
 using Atom = std::string;
 using State = std::list<Atom>;
 using Transitions = std::unordered_map<
     Atom,
     size_t
 >;
-using TransitionsWithWeights = std::tuple<
-    Transitions, 
-    size_t // sum of transitions weights
->;
-using StateMachine = std::unordered_map<
-    State,
-    TransitionsWithWeights,
-    StateHash
->;
+
+class TransitionsWithWeights {
+public:
+    TransitionsWithWeights(Transitions &&transitions, size_t weights_sum)
+        : transitions_{std::move(transitions)}, weights_sum_{weights_sum} {}
+
+    Transitions & transitions() { return transitions_; }
+    const Transitions & transitions() const { return transitions_; }
+    size_t weights_sum() const { return weights_sum_; }
+
+    void calc_weights_sum() {
+        weights_sum_ = std::accumulate(
+            transitions_.begin(), transitions_.end(), size_t{0},
+            [](size_t s, auto &transition){
+                return s + transition.second;
+            }
+        );
+    }
+
+private:
+    Transitions transitions_{};
+    size_t weights_sum_{0};
+};
 
 
 struct StateHash {
@@ -45,5 +54,11 @@ struct StateHash {
     };
 };
 
+
+using StateMachine = std::unordered_map<
+    State,
+    TransitionsWithWeights,
+    StateHash
+>;
 
 #endif // __base_types_h__

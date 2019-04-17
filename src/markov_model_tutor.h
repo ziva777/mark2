@@ -1,9 +1,10 @@
 #ifndef __markov_model_tutor_h__
 #define __markov_model_tutor_h__
 
-#include <iterator>
 #include <string>
+#include <list>
 
+#include "string_view.h"
 #include "markov_model.h"
 
 
@@ -12,15 +13,15 @@ public:
     void train(
             MarkovModel &model,
             std::string &&data,
-            bool calc_weights = false);
+            bool calc_weights = false,
+            char data_tokes_sep = ' ');
     
 private:
-    using TokensItr = std::istream_iterator<std::string>;
-
+    template<typename ITRERATOR>
     void train_from_itr_(
             MarkovModel &model,
-            TokensItr begin,
-            TokensItr end);
+            ITRERATOR begin,
+            ITRERATOR end);
 };
 
 
