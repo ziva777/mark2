@@ -51,10 +51,39 @@ MarkovModel::calc_weights()
     }
 }
 
-void 
+/*void 
 MarkovModel::place(
         const State &state, 
         const Atom &atom)
+{
+    // core[state][atom] += 1;
+
+    auto res = 
+        machine_.emplace(
+            state, 
+            TransitionsWithWeights{
+                Transitions{
+                    {atom, 1}
+                }, 
+                0
+            }
+        );
+
+    auto itr = res.first;
+    bool created = res.second;
+
+    if (!created) {
+        Transitions &tr = itr->second.transitions();
+        auto res = tr.emplace(atom, 0);
+        auto item = res.first;
+        ++item->second;
+    }
+}*/
+
+void 
+MarkovModel::place(
+        State &&state, 
+        Atom &&atom)
 {
     // core[state][atom] += 1;
 

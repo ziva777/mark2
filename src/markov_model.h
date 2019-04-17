@@ -13,9 +13,12 @@ public:
 
     void calc_weights();
     
-    void place(
+    /*void place(
             const State &state, 
-            const Atom &atom);
+            const Atom &atom);*/
+    void place(
+            State &&state, 
+            Atom &&atom);
     void place(
             State &&state, 
             TransitionsWithWeights &&transitions);

@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <iterator>
-// #include <iostream>
 #include <string>
 
 
@@ -16,9 +15,7 @@ public:
             : itr_{std::find(data.begin(), data.end(), sep)}, 
               begin_{data.begin()}, 
               end_{data.end()}, 
-              sep_{sep} 
-        {
-        }
+              sep_{sep} {}
 
         Itr(std::string::iterator itr, 
             std::string::value_type sep)

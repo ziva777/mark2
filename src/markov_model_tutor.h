@@ -17,6 +17,7 @@ public:
             char data_tokes_sep = ' ');
     
 private:
+    static const char TOKENS_SEPARATOR = ' ';
     template<typename ITRERATOR>
     void train_from_itr_(
             MarkovModel &model,
