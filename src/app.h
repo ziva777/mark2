@@ -19,11 +19,11 @@ public:
 private:
     static const char MODE_CREATE_MODEL[];
     static const char MODE_EXEC_MODEL[];
-    static const char LOCALE[];
     static const char CURL_CMD[];
 
     using Urls = std::list<std::string>;
 
+    std::string locale_;
     Args args_;
 
     int create_mode_(

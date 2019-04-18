@@ -4,13 +4,29 @@
 #include <codecvt>
 #include <locale>
 
+namespace msg_str {
+    static const char LOCALE_UNSUPPORTED[] = 
+        "Your local is not supported - ";
+}
+
+
+struct ToLower {
+    std::locale loc;
+    std::wstring::value_type operator()(
+        std::wstring::value_type c) const 
+    {
+        return std::tolower(c, loc);
+    }
+};
+
+
 void 
 StrFilter::process(
     std::string &data,
-    std::string locale_name) const
+    const std::string &locale_name) const
 {
     _remove_punct(data);
-    _to_lower(data, locale_name);
+    data = _to_lower(std::move(data), locale_name);
     _remove_new_lines(data);
 }
 
@@ -26,26 +42,30 @@ StrFilter::_remove_punct(
             ' ');
 }
 
-void 
+std::string 
 StrFilter::_to_lower(
-    std::string &data,
-    std::string locale_name) const
+    std::string &&data,
+    const std::string &locale_name) const
 {
-    std::locale utf8_loc(locale_name);
-    std::wstring_convert<
-        std::codecvt_utf8<wchar_t>
-    > conv;
-    std::wstring ws = conv.from_bytes(std::move(data));
+    try {
+        std::locale utf8_loc(locale_name);
+        std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+        std::wstring ws = conv.from_bytes(std::move(data));
 
-    std::transform(
-        ws.begin(), ws.end(),
-        ws.begin(),
-        [&](wchar_t c) {
-            return (wchar_t)std::tolower(c, utf8_loc);
-        }
-    );
+        std::transform(
+            ws.begin(), ws.end(),
+            ws.begin(),
+            ToLower{utf8_loc}
+        );
 
-    data = conv.to_bytes(ws);
+        data = conv.to_bytes(ws);
+    } catch (const std::runtime_error &) {
+        std::string msg = msg_str::LOCALE_UNSUPPORTED;
+        msg += locale_name;
+        throw std::logic_error(msg);
+    }
+
+    return data;
 }
 
 void 

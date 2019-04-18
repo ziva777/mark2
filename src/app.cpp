@@ -11,7 +11,6 @@
 
 const char App::MODE_CREATE_MODEL[] = "c";
 const char App::MODE_EXEC_MODEL[] = "e";
-const char App::LOCALE[] = "ru_RU.UTF-8";
 const char App::CURL_CMD[] = "curl -s ";
 
 namespace msg_str {
@@ -51,6 +50,7 @@ App::App(
         Args &&args)
 : args_{std::move(args)}
 {
+    locale_ = std::getenv("LANG");
 }
 
 int
@@ -210,7 +210,7 @@ App::create_model_from_urls_(
 
         if (ok) {
             if (!data.empty()) {
-                filter.process(data, LOCALE);
+                filter.process(data, locale_);
                 tutor.train(model, std::move(data), false);
             }
         } else {
@@ -268,7 +268,7 @@ std::pair<
         size_t model_order) const
 {
     trim(line);
-    filter.process(line, LOCALE);
+    filter.process(line, locale_);
 
     State state;
     size_t n_count = 0;

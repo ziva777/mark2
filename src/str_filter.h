@@ -8,13 +8,13 @@ class StrFilter {
 public:
     void process(
             std::string &data,
-            std::string locale_name) const;
+            const std::string &locale_name) const;
 private:
     void _remove_punct(
             std::string &data) const;
-    void _to_lower(
-            std::string &data,
-            std::string locale_name) const;
+    std::string _to_lower(
+            std::string &&data,
+            const std::string &locale_name) const;
     void _remove_new_lines(
             std::string &data) const;
 };
