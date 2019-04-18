@@ -10,115 +10,7 @@
 #include <string>
 #include <list>
 
-class StringView {
-public:
-    // using List = std::list<std::string>;
-
-    class Itr {
-    public:
-        Itr(std::string &data, 
-            std::string::value_type sep)
-            : itr_{data.begin()}, begin_{data.begin()}, 
-                end_{data.end()}, sep_{sep} 
-        {
-            while (itr_ != end_ && *itr_ == sep_) {
-                ++itr_;
-            }
-        }
-
-        Itr(std::string::iterator itr, 
-            std::string::value_type sep)
-            : itr_{itr}, begin_{itr}, 
-                end_{itr}, sep_{sep} {}
-
-        std::string operator * () {
-            std::string tmp;
-
-            
-
-            for (auto itr = itr_; itr != end_; ++itr) {
-                if (*itr != sep_) {
-                    tmp.push_back(*itr);
-                } else {
-                    break;
-                }
-
-            }
-            return tmp;
-        }
-
-        Itr & operator ++ () {
-            for (;itr_ != end_; ++itr_) {
-                if ((*itr_ == sep_) || (*itr_ == '\n')) {
-                    break;
-                }
-            }
-
-            for (;itr_ != end_; ++itr_) {
-                if ((*itr_ != sep_) && (*itr_ != '\n')) {
-                    break;
-                }
-            }
-
-            return *this;
-        }
-        Itr operator ++ (int) {
-            Itr tmp{*this};
-            this->operator ++ ();
-            return tmp;
-        }
-
-        friend
-        bool operator == (const StringView::Itr &lhs, const StringView::Itr &rhs) {
-            return lhs.itr_ == rhs.itr_;
-        }
-        friend
-        bool operator != (const StringView::Itr &lhs, const StringView::Itr &rhs) {
-            return !(lhs == rhs);
-        }
-        
-    private:
-        std::string::iterator itr_;
-        std::string::iterator begin_;
-        std::string::iterator end_;
-        std::string::value_type sep_;
-    };
-
-    StringView() = delete;
-    StringView(std::string &&data)
-        : data_{std::move(data)} {}
-
-
-    Itr begin(char sep) {
-        return Itr{data_, sep};
-    }
-
-    Itr end(char sep) {
-        return Itr{data_.end(), sep};
-    }
-
-    // void split(List &list, char sep) const {
-    //     std::string tmp;
-
-    //     for (auto c : data_) {
-    //         if (c != sep)
-    //             tmp.push_back(c);
-    //         else {
-    //             if (!tmp.empty())
-    //                 list.emplace_back(std::move(tmp));
-    //         }
-    //     }
-
-    //     if (!tmp.empty()) {
-    //         list.emplace_back(std::move(tmp));
-    //     }
-    // }
-
-private:
-    std::string data_;
-};
-
-
+#include "../string_view.h"
 
 void
 foo()
@@ -126,17 +18,17 @@ foo()
 #   define STR \
         "     Взявшись хлопотать об издании Повестей И. П. Белкина, предлагаемых ныне\n"\
         "публике, мы желали к оным присовокупить хотя краткое жизнеописание покойного"
+
+    std::string s1, s2;
     {
         StringView view(STR);
         char sep = ' ';
-        StringView::Itr itr = view.begin(sep);
-        StringView::Itr end = view.end(sep);
+        auto itr = view.begin(sep);
+        auto end = view.end(sep);
 
         while (itr != end) {
-            std::cout << ">" << *itr++ << "< ";
+            s1 += ">" + *itr++ + "< ";
         }
-
-        std::cout << std::endl;
     }
 
     {
@@ -144,14 +36,16 @@ foo()
         std::istream_iterator<std::string> itr{iss}, end{};
 
         while (itr != end) {
-            std::cout << ">" << *itr++ << "< ";
+            s2 += ">" + *itr++ + "< ";
         }
-
-        std::cout << std::endl;
     }
+
+    assert(s1 == s2);
+    std::cout << "Test #04.01 PASSED" << std::endl;
 }
 
-int main()
+void 
+bar()
 {
     using State = std::list<std::string>;
 
@@ -175,10 +69,15 @@ int main()
         }
     );
 
-    // std::cout << " str = " << s << std::endl;
-    // std::cout << "hash = " << h << std::endl;
-
+    
     assert(3388165740184751273ULL == h);
+    std::cout << "Test #04.02 PASSED" << std::endl;
+}
+
+int main()
+{
+    std::cout << "Test #04\n";
     foo();
+    bar();
     return EXIT_SUCCESS;
 }

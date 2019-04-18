@@ -105,6 +105,8 @@ App::create_mode_(const std::string &arg)
         std::cerr << msg_str::OOPS << e.what() << std::endl;
     } catch (const std::out_of_range &e) {
         std::cerr << msg_str::OOPS << e.what() << std::endl;
+    } catch (const std::logic_error &e) {
+        std::cerr << msg_str::OOPS << e.what() << std::endl;
     } catch (...) {
         std::cerr << msg_str::OOPS << msg_str::UNKNOWN_ERROR << std::endl;
     }

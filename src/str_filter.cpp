@@ -52,6 +52,11 @@ void
 StrFilter::_remove_new_lines(
         std::string &data) const
 {
-    std::replace(data.begin(), data.end(), '\n', ' ');
-    std::replace(data.begin(), data.end(), '\r', ' ');
+    std::replace_if(
+        data.begin(), data.end(),
+        [](std::string::value_type c) {
+            return c == '\n' || c == '\r' || c == '\t';
+        },
+        ' '
+    );
 }
