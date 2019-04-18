@@ -8,7 +8,7 @@ set(SOURCES1
 		${SRC}/main.cpp 
 		${SRC}/str_filter.cpp
 		${SRC}/misc.cpp
-		${SRC}/string_view.cpp
+		${SRC}/token_iterator.cpp
 		${SRC}/formatter.cpp
 		${SRC}/markov_model.cpp
 		${SRC}/markov_model_tutor.cpp
@@ -41,7 +41,7 @@ add_executable(
 add_executable(
 	test_04 
 		${SRC}/test/test_04.cpp
-		${SRC}/string_view.cpp)
+		${SRC}/token_iterator.cpp)
 
 
 # Fix behavior of CMAKE_CXX_STANDARD when targeting macOS.

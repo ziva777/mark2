@@ -1,10 +1,11 @@
 #include "markov_model_tutor.h"
 
 #include <stdexcept>
-// #include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <vector>
+
+#include "token_iterator.h"
 
 namespace msg_str {
     static const char ORDER_ERROR[] = "Corpus must be >= order!";
@@ -21,12 +22,10 @@ MarkovModelTutor::train(
     // std::istream_iterator<std::string> begin{iss}, end{};
     // train_from_itr_(model, begin, end);
 
-    StringView view{std::move(data)};
-
     train_from_itr_(
         model, 
-        view.begin(TOKENS_SEPARATOR), 
-        view.end(TOKENS_SEPARATOR)
+        TokenIterator::begin(data, TOKENS_SEPARATOR), 
+        TokenIterator::end(data, TOKENS_SEPARATOR)
     );
 
     if (calc_weights)
