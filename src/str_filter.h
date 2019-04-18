@@ -6,8 +6,8 @@
 
 class StrFilter {
 public:
-    void process(
-            std::string &data,
+    std::string process(
+            std::string &&data,
             const std::string &locale_name) const;
 private:
     void _remove_punct(

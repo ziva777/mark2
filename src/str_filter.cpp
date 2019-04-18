@@ -20,14 +20,15 @@ struct ToLower {
 };
 
 
-void 
+std::string 
 StrFilter::process(
-    std::string &data,
+    std::string &&data,
     const std::string &locale_name) const
 {
     _remove_punct(data);
     data = _to_lower(std::move(data), locale_name);
     _remove_new_lines(data);
+    return data;
 }
 
 void 

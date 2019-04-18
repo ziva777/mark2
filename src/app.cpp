@@ -43,6 +43,8 @@ namespace msg_str {
         "";
 
     static const char EXIT_SEQ[] = "\\q";
+
+    static const char LANG_ENV[] = "LANG";
 }
 
 
@@ -50,7 +52,7 @@ App::App(
         Args &&args)
 : args_{std::move(args)}
 {
-    locale_ = std::getenv("LANG");
+    locale_ = std::getenv(msg_str::LANG_ENV);
 }
 
 int
@@ -210,7 +212,7 @@ App::create_model_from_urls_(
 
         if (ok) {
             if (!data.empty()) {
-                filter.process(data, locale_);
+                data = filter.process(std::move(data), locale_);
                 tutor.train(model, std::move(data), false);
             }
         } else {
@@ -268,7 +270,7 @@ std::pair<
         size_t model_order) const
 {
     trim(line);
-    filter.process(line, locale_);
+    line = filter.process(std::move(line), locale_);
 
     State state;
     size_t n_count = 0;

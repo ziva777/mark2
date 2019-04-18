@@ -25,15 +25,15 @@ test_02_2()
     std::string s;
 
     s = "hi";
-    filter.process(s, LOCALE);
+    s = filter.process(std::move(s), LOCALE);
     assert(s == "hi");
 
     s = "HI";
-    filter.process(s, LOCALE);
+    s = filter.process(std::move(s), LOCALE);
     assert(s == "hi");
 
     s = "Привет";
-    filter.process(s, LOCALE);
+    s = filter.process(std::move(s), LOCALE);
     assert(s == "привет");
 
     std::cout << "Test #02.02 PASSED" << std::endl;
