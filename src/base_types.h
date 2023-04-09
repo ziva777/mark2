@@ -17,8 +17,12 @@ using Transitions = std::unordered_map<
 
 class TransitionsWithWeights {
 public:
-    TransitionsWithWeights(Transitions &&transitions, size_t weights_sum)
-        : transitions_{std::move(transitions)}, weights_sum_{weights_sum} {}
+    TransitionsWithWeights(Transitions &&transitions, size_t weights_sum):
+        transitions_{std::move(transitions)},
+        weights_sum_{weights_sum}
+    {}
+
+    TransitionsWithWeights(TransitionsWithWeights&&) = default;
 
     Transitions & transitions() { return transitions_; }
     const Transitions & transitions() const { return transitions_; }
@@ -34,8 +38,8 @@ public:
     }
 
 private:
-    Transitions transitions_{};
-    size_t weights_sum_{0};
+    Transitions transitions_;
+    size_t weights_sum_ = 0;
 };
 
 

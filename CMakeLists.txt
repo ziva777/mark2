@@ -20,6 +20,10 @@ set(SOURCES1
 add_executable(
 	${PROJECT_NAME} 
 		${SOURCES1})
+set_target_properties(
+	${PROJECT_NAME} PROPERTIES
+	CXX_STANDARD 17
+	CXX_STANDARD_REQUIRED ON)
 add_executable(
 	test_01 
 		${SRC}/test/test_01.cpp 
@@ -43,13 +47,3 @@ add_executable(
 		${SRC}/test/test_04.cpp
 		${SRC}/token_iterator.cpp)
 
-
-# Fix behavior of CMAKE_CXX_STANDARD when targeting macOS.
-if (POLICY CMP0025)
-	add_definitions(-std=c++14)
-endif ()
-
-set_target_properties(
-	${PROJECT_NAME} PROPERTIES
-	CXX_STANDARD 14
-	CXX_STANDARD_REQUIRED ON)

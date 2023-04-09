@@ -228,9 +228,7 @@ App::create_model_from_urls_(
     return model;
 }
 
-MarkovModel 
-App::load_from_file_(
-        const std::string &file)
+MarkovModel App::load_from_file_(const std::string &file)
 {
     std::ifstream ifs;
     std::stringstream ss;
