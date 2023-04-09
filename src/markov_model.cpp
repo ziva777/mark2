@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <random>
+#include <utility>
 
 #include "misc.h"
 
@@ -43,21 +44,15 @@ MarkovModel::MarkovModel(
 {
 }
 
-void 
-MarkovModel::calc_weights()
+void MarkovModel::calc_weights()
 {
     for (auto &item : machine_) {
         item.second.calc_weights_sum();
     }
 }
 
-void 
-MarkovModel::place(
-        State &&state, 
-        Atom &&atom)
+void MarkovModel::place(State &&state, Atom &&atom)
 {
-    // core[state][atom] += 1;
-
     auto res = 
         machine_.emplace(
             state, 
@@ -73,22 +68,15 @@ MarkovModel::place(
     bool created = res.second;
 
     if (!created) {
-        Transitions &tr = itr->second.transitions();
-        auto res = tr.emplace(atom, 0);
-        auto item = res.first;
-        ++item->second;
+        Transitions &transactions = itr->second.transitions();
+        auto [transaction, _] = transactions.emplace(atom, 0);
+        ++transaction->second;
     }
 }
 
-void 
-MarkovModel::place(
-        State &&state, 
-        TransitionsWithWeights &&transitions)
+void MarkovModel::place(State &&state, TransitionsWithWeights &&transitions)
 {
-    machine_.emplace(
-        state, 
-        transitions
-    );
+    machine_.emplace(std::move(state), std::move(transitions));
 }
 
 std::string 

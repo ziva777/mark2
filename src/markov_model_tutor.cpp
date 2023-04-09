@@ -32,12 +32,9 @@ MarkovModelTutor::train(
         model.calc_weights();
 }
 
-template<typename ITRERATOR>
+template<typename Iterator>
 void 
-MarkovModelTutor::train_from_itr_(
-        MarkovModel &model,
-        ITRERATOR begin,
-        ITRERATOR end)
+MarkovModelTutor::train_from_itr_(MarkovModel &model, Iterator begin, Iterator end)
 {
     size_t n = model.order();
     bool corpus_empty = true;
@@ -56,10 +53,7 @@ MarkovModelTutor::train_from_itr_(
             for (auto itr2 = begin; itr2 != itr; ++itr2) {
                 state.emplace_back(*itr2);
             }
-
-            if (itr != end) {
-                model.place(std::move(state), std::move(*itr));
-            }
+            model.place(std::move(state), std::move(*itr));
         }
     }
 

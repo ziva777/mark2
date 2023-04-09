@@ -13,16 +13,10 @@ public:
 
     void calc_weights();
     
-    void place(
-            State &&state, 
-            Atom &&atom);
-    void place(
-            State &&state, 
-            TransitionsWithWeights &&transitions);
+    void place(State &&state, Atom &&atom);
+    void place(State &&state, TransitionsWithWeights &&transitions);
 
-    std::string generate(
-            State &&origin,
-            size_t n) const;
+    std::string generate(State &&origin, size_t n) const;
 
     size_t order() const { return order_; }
 
@@ -34,7 +28,6 @@ public:
 private:
     size_t order_;
     StateMachine machine_;
-    StateMachine::iterator itr;
 };
 
 
